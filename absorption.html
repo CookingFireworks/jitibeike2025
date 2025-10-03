@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高吸水性树脂吸水率测定系统</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e8f4fc;
+            border-radius: 8px;
+        }
+        .input-row {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+        label {
+            width: 200px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 150px;
+        }
+        .unit {
+            margin-left: 10px;
+            color: #7f8c8d;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .result-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border-left: 4px solid #3498db;
+        }
+        .result-item {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        .result-value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .qualified {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .unqualified {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .experiment-info {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .formula {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+        }
+        .instructions {
+            background: #e8f6f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 14px;
+            border-left: 4px solid #1abc9c;
+        }
+        .reset-btn {
+            background: #e74c3c;
+        }
+        .reset-btn:hover {
+            background: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 高吸水性树脂吸水率测定系统</h1>
+        <div class="subtitle">基于量筒法测定 · 快速判断产品合格性</div>
+        
+        <div class="experiment-info">
+            <h3>📋 实验方法</h3>
+            <p>采用量筒法测定：取0.5g树脂样品，加入200g水，充分吸水后测量剩余水量，计算吸水率。</p>
+            <div class="formula">
+                吸水率 = (初始水量 - 剩余水量) ÷ 吸水前树脂重量<br>
+                <strong>吸水率 > 300 g/g 为合格产品</strong>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>🔍 操作说明</h3>
+            <ol>
+                <li>准备0.5g高吸水性树脂样品</li>
+                <li>量筒中加入200g水</li>
+                <li>将树脂样品加入量筒中，充分吸水30分钟</li>
+                <li>测量并输入量筒中剩余水量</li>
+                <li>系统自动计算吸水率并判断是否合格</li>
+            </ol>
+        </div>
+
+        <div class="input-group">
+            <h3>⚙️ 实验参数输入</h3>
+            
+            <div class="input-row">
+                <label for="resin-weight">吸水前树脂重量:</label>
+                <input type="number" id="resin-weight" step="0.1" min="0.1" value="0.5">
+                <span class="unit">g</span>
+            </div>
+            
+            <div class="input-row">
+                <label for="initial-water">初始水量:</label>
+                <input type="number" id="initial-water" step="1" min="50" value="200" readonly>
+                <span class="unit">g</span>
+            </div>
+            
+            <div class="input-row">
+                <label for="remaining-water">量筒剩余水量:</label>
+                <input type="number" id="remaining-water" step="1" min="0" max="200" placeholder="请输入剩余水量">
+                <span class="unit">g</span>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="calculateAbsorption()">📊 计算吸水率</button>
+                <button onclick="resetForm()" class="reset-btn">🔄 重置</button>
+            </div>
+        </div>
+
+        <div class="result-panel" id="result-panel" style="display: none;">
+            <h3>📈 测定结果</h3>
+            
+            <div class="result-item">
+                树脂重量: <span class="result-value" id="result-weight">-</span> g
+            </div>
+            
+            <div class="result-item">
+                初始水量: <span class="result-value" id="result-initial-water">-</span> g
+            </div>
+            
+            <div class="result-item">
+                剩余水量: <span class="result-value" id="result-remaining-water">-</span> g
+            </div>
+            
+            <div class="result-item">
+                吸水量: <span class="result-value" id="result-absorbed-water">-</span> g
+            </div>
+            
+            <div class="result-item">
+                吸水率: <span class="result-value" id="result-absorption-rate">-</span> g/g
+            </div>
+            
+            <div class="result-item">
+                判定结果: <span id="result-qualified">-</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateAbsorption() {
+            // 获取输入值
+            const resinWeight = parseFloat(document.getElementById('resin-weight').value);
+            const initialWater = parseFloat(document.getElementById('initial-water').value);
+            const remainingWater = parseFloat(document.getElementById('remaining-water').value);
+            
+            // 验证输入
+            if (isNaN(resinWeight) || resinWeight <= 0) {
+                alert("请输入有效的树脂重量（大于0）");
+                return;
+            }
+            
+            if (isNaN(remainingWater) || remainingWater < 0 || remainingWater > initialWater) {
+                alert("剩余水量应在0-" + initialWater + "g之间");
+                return;
+            }
+            
+            // 计算吸水量和吸水率
+            const absorbedWater = initialWater - remainingWater;
+            const absorptionRate = absorbedWater / resinWeight;
+            
+            // 判断是否合格
+            const isQualified = absorptionRate > 300;
+            
+            // 显示结果
+            document.getElementById('result-weight').textContent = resinWeight.toFixed(1);
+            document.getElementById('result-initial-water').textContent = initialWater.toFixed(0);
+            document.getElementById('result-remaining-water').textContent = remainingWater.toFixed(0);
+            document.getElementById('result-absorbed-water').textContent = absorbedWater.toFixed(1);
+            document.getElementById('result-absorption-rate').textContent = absorptionRate.toFixed(1);
+            
+            const qualifiedElement = document.getElementById('result-qualified');
+            if (isQualified) {
+                qualifiedElement.textContent = "✅ 合格";
+                qualifiedElement.className = "qualified";
+            } else {
+                qualifiedElement.textContent = "❌ 不合格";
+                qualifiedElement.className = "unqualified";
+            }
+            
+            // 显示结果面板
+            document.getElementById('result-panel').style.display = 'block';
+        }
+        
+        function resetForm() {
+            document.getElementById('resin-weight').value = "0.5";
+            document.getElementById('remaining-water').value = "";
+            document.getElementById('result-panel').style.display = 'none';
+        }
+        
+        // 为剩余水量输入框添加键盘事件，按Enter键自动计算
+        document.getElementById('remaining-water').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculateAbsorption();
+            }
+        });
+    </script>
+</body>
+</html>
