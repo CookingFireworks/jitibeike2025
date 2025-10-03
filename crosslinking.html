@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高分子交联与弹性可视化</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .comparison-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .crosslink-card {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .crosslink-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .no-crosslink {
+            border-top: 5px solid #e74c3c;
+        }
+
+        .moderate-crosslink {
+            border-top: 5px solid #2ecc71;
+        }
+
+        .excessive-crosslink {
+            border-top: 5px solid #3498db;
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .molecule-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            min-height: 250px;
+        }
+
+        .properties {
+            margin: 20px 0;
+        }
+
+        .property {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        .property-name {
+            font-weight: bold;
+        }
+
+        .property-value {
+            font-weight: bold;
+        }
+
+        .no-value {
+            color: #e74c3c;
+        }
+
+        .moderate-value {
+            color: #2ecc71;
+        }
+
+        .excessive-value {
+            color: #3498db;
+        }
+
+        .control-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .control-panel h3 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .slider-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .slider {
+            width: 100%;
+            height: 20px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(to right, #2ecc71, #f1c40f, #e74c3c);
+            outline: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .force-display {
+            font-size: 1.2em;
+            margin-top: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .explanation {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            margin-top: 30px;
+            line-height: 1.6;
+        }
+
+        .explanation h3 {
+            color: #f1c40f;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        .conclusion {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            text-align: center;
+            border-left: 5px solid #f1c40f;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-container {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>高分子交联与弹性可视化</h1>
+            <p class="subtitle">探索交联程度如何影响聚合物的弹性性能</p>
+        </header>
+
+        <div class="comparison-container">
+            <div class="crosslink-card no-crosslink">
+                <div class="card-header">
+                    <h2>不交联</h2>
+                    <p>线性高分子，无交联点</p>
+                </div>
+                
+                <div class="molecule-container" id="no-crosslink-canvas">
+                    <!-- 分子结构将通过JavaScript绘制 -->
+                </div>
+                
+                <div class="properties">
+                    <div class="property">
+                        <span class="property-name">弹性恢复</span>
+                        <span class="property-value no-value">差</span>
+                    </div>
+                    <div class="property">
+                        <span class="property-name">强度</span>
+                        <span class="property-value no-value">低</span>
+                    </div>
+                    <div class="property">
+                        <span class="property-name">形变类型</span>
+                        <span class="property-value no-value">塑性形变</span>
+                    </div>
+                    <div class="property">
+                        <span class="property-name">典型材料</span>
+                        <span class="property-value no-value">未硫化橡胶</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crosslink-card moderate-crosslink">
+                <div class="card-header">
+                    <h2>适度交联</h2>
+                    <p>最佳交联密度</p>
+                </div>
+                
+                <div class="molecule-container" id="moderate-crosslink-canvas">
+                    <!-- 分子结构将通过JavaScript绘制 -->
+                </div>
+                
+                <div class="properties">
+                    <div class="property">
+                        <span class="property-name">弹性恢复</span>
+                        <span class="property-value moderate-value">优秀</span>
+                    </div>
+                    <div class="property">
+                        <span class="property-name">强度</span>
+                        <span class="property-value moderate-value">适中</span>
+                    </div>
+                    <div class="property">
+                        <span class="property-name">形变类型</span>
+                        <span class="property-value moderate-value">高弹性形变</span>
+                    </div>
+                    <div class="property">
+                        <span class="property-name">典型材料</span>
+                        <span class="property-value moderate-value">硫化橡胶</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crosslink-card excessive-crosslink">
+                <div class="card-header">
+                    <h2>过度交联</h2>
+                    <p>交联点过密</p>
+                </div>
+                
+                <div class="molecule-container" id="excessive-crosslink-canvas">
+                    <!-- 分子结构将通过JavaScript绘制 -->
+                </div>
+                
+                <div class="properties">
+                    <div class="property">
+                        <span class="property-name">弹性恢复</span>
+                        <span class="property-value excessive-value">差</span>
+                    </div>
+                    <div class="property">
+                        <span class="property-name">强度</span>
+                        <span class="property-value excessive-value">高</span>
+                    </div>
+                    <div class="property">
+                        <span class="property-name">形变类型</span>
+                        <span class="property-value excessive-value">脆性断裂</span>
+                    </div>
+                    <div class="property">
+                        <span class="property-name">典型材料</span>
+                        <span class="property-value excessive-value">硬质橡胶</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <h3>施加外力控制</h3>
+            <div class="slider-container">
+                <input type="range" min="0" max="100" value="0" class="slider" id="force-slider">
+                <div class="force-display">
+                    <span>未受力</span>
+                    <span id="current-force">0%</span>
+                    <span>最大受力</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="explanation">
+            <h3>科学原理解释</h3>
+            <p><strong>为什么适度交联会产生弹性？</strong></p>
+            <p>交联点在高分子链之间形成三维网络结构，防止分子链相互滑移。当材料被拉伸时，分子链从蜷曲状态变为伸展状态（熵减小）；当外力释放时，系统自发回到熵值最大的蜷曲状态，宏观上表现为弹性恢复。</p>
+            
+            <p><strong>为什么过度交联会降低弹性？</strong></p>
+            <p>过多的交联点大大限制了分子链段的运动能力，链段无法充分蜷曲和伸展。材料从熵弹性转向能弹性，变得硬而脆，容易发生脆性断裂。</p>
+            
+            <p><strong>为什么不交联材料弹性差？</strong></p>
+            <p>没有交联点的线性高分子在受力时，分子链会相互滑移，无法恢复到原始形状，发生永久性形变（塑性形变）。</p>
+        </div>
+
+        <div class="conclusion">
+            <h3>核心结论：适度交联是关键</h3>
+            <p>在防止分子链滑移（需要交联点）和保持链段运动能力（需要自由链段）之间找到最佳平衡点，才能获得理想的弹性材料。</p>
+        </div>
+    </div>
+
+    <script>
+        // 获取Canvas元素和滑块
+        const noCrosslinkCanvas = document.getElementById('no-crosslink-canvas');
+        const moderateCrosslinkCanvas = document.getElementById('moderate-crosslink-canvas');
+        const excessiveCrosslinkCanvas = document.getElementById('excessive-crosslink-canvas');
+        const forceSlider = document.getElementById('force-slider');
+        const currentForce = document.getElementById('current-force');
+
+        // 设置Canvas尺寸
+        function setCanvasSize() {
+            const canvases = [noCrosslinkCanvas, moderateCrosslinkCanvas, excessiveCrosslinkCanvas];
+            canvases.forEach(canvas => {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+            });
+        }
+
+        // 绘制不交联分子结构
+        function drawNoCrosslink(force) {
+            const canvas = noCrosslinkCanvas;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // 根据受力计算拉伸程度
+            const stretch = force / 100;
+            
+            // 绘制多个线性分子链
+            const chainCount = 5;
+            for (let i = 0; i < chainCount; i++) {
+                const x = width * (0.1 + i * 0.2);
+                const yStart = height * 0.2;
+                const yEnd = height * 0.8;
+                
+                // 绘制主链 - 随机弯曲
+                ctx.beginPath();
+                ctx.moveTo(x, yStart);
+                
+                // 未受力时的弯曲状态
+                if (force === 0) {
+                    for (let y = yStart; y <= yEnd; y += 10) {
+                        const randomOffset = (Math.random() - 0.5) * 30;
+                        ctx.lineTo(x + randomOffset, y);
+                    }
+                } 
+                // 受力时的拉伸状态
+                else {
+                    // 分子链被拉直，但各链之间没有连接，会相互滑移
+                    for (let y = yStart; y <= yEnd; y += 10) {
+                        const offset = (Math.random() - 0.5) * 10 * (1 - stretch);
+                        ctx.lineTo(x + offset, y);
+                    }
+                }
+                
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 绘制分子链滑移指示（当受力时）
+                if (force > 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, yStart - 10);
+                    ctx.lineTo(x, yStart - 20);
+                    ctx.lineTo(x + 30 * stretch, yStart - 20);
+                    ctx.lineTo(x + 30 * stretch, yStart - 10);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    
+                    // 滑移箭头
+                    ctx.beginPath();
+                    ctx.moveTo(x + 30 * stretch, yStart - 15);
+                    ctx.lineTo(x + 35 * stretch, yStart - 20);
+                    ctx.lineTo(x + 35 * stretch, yStart - 10);
+                    ctx.closePath();
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.fill();
+                }
+            }
+            
+            // 添加文字说明
+            ctx.fillStyle = 'white';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            if (force === 0) {
+                ctx.fillText('分子链随机卷曲', width/2, height * 0.9);
+            } else if (force < 70) {
+                ctx.fillText('分子链被拉伸，相互滑移', width/2, height * 0.9);
+            } else {
+                ctx.fillText('永久形变，无法恢复', width/2, height * 0.9);
+            }
+        }
+
+        // 绘制适度交联分子结构
+        function drawModerateCrosslink(force) {
+            const canvas = moderateCrosslinkCanvas;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // 根据受力计算拉伸程度
+            const stretch = force / 100;
+            
+            // 绘制交联网络
+            const nodes = [];
+            const rows = 4;
+            const cols = 4;
+            
+            // 创建节点
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const x = width * (0.1 + j * 0.25);
+                    const y = height * (0.1 + i * 0.25);
+                    
+                    // 未受力时的随机位置
+                    let nodeX, nodeY;
+                    if (force === 0) {
+                        nodeX = x + (Math.random() - 0.5) * 30;
+                        nodeY = y + (Math.random() - 0.5) * 30;
+                    } else {
+                        // 受力时的拉伸位置
+                        nodeX = x + (Math.random() - 0.5) * 30 * (1 - stretch);
+                        nodeY = y + stretch * 50;
+                    }
+                    
+                    nodes.push({x: nodeX, y: nodeY});
+                }
+            }
+            
+            // 绘制连接线（交联）
+            ctx.strokeStyle = '#2ecc71';
+            ctx.lineWidth = 2;
+            
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+                const row = Math.floor(i / cols);
+                const col = i % cols;
+                
+                // 连接右侧节点
+                if (col < cols - 1) {
+                    const rightNode = nodes[i + 1];
+                    ctx.beginPath();
+                    ctx.moveTo(node.x, node.y);
+                    ctx.lineTo(rightNode.x, rightNode.y);
+                    ctx.stroke();
+                }
+                
+                // 连接下方节点
+                if (row < rows - 1) {
+                    const bottomNode = nodes[i + cols];
+                    ctx.beginPath();
+                    ctx.moveTo(node.x, node.y);
+                    ctx.lineTo(bottomNode.x, bottomNode.y);
+                    ctx.stroke();
+                }
+            }
+            
+            // 绘制节点（交联点）
+            ctx.fillStyle = '#f1c40f';
+            nodes.forEach(node => {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // 添加文字说明
+            ctx.fillStyle = 'white';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            if (force === 0) {
+                ctx.fillText('交联网络处于自然状态', width/2, height * 0.9);
+            } else if (force < 70) {
+                ctx.fillText('交联网络被拉伸，可恢复', width/2, height * 0.9);
+            } else {
+                ctx.fillText('高度拉伸，但仍可恢复', width/2, height * 0.9);
+            }
+        }
+
+        // 绘制过度交联分子结构
+        function drawExcessiveCrosslink(force) {
+            const canvas = excessiveCrosslinkCanvas;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // 根据受力计算拉伸程度
+            const stretch = Math.min(force / 100, 0.3); // 过度交联拉伸有限
+            
+            // 绘制密集交联网络
+            const nodes = [];
+            const rows = 6;
+            const cols = 6;
+            
+            // 创建节点
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const x = width * (0.1 + j * 0.15);
+                    const y = height * (0.1 + i * 0.15);
+                    
+                    // 未受力时的位置
+                    let nodeX, nodeY;
+                    if (force === 0) {
+                        nodeX = x + (Math.random() - 0.5) * 10;
+                        nodeY = y + (Math.random() - 0.5) * 10;
+                    } else {
+                        // 受力时的有限拉伸
+                        nodeX = x + (Math.random() - 0.5) * 10 * (1 - stretch);
+                        nodeY = y + stretch * 20;
+                    }
+                    
+                    nodes.push({x: nodeX, y: nodeY});
+                }
+            }
+            
+            // 绘制密集连接线（过度交联）
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 2;
+            
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+                const row = Math.floor(i / cols);
+                const col = i % cols;
+                
+                // 连接右侧节点
+                if (col < cols - 1) {
+                    const rightNode = nodes[i + 1];
+                    ctx.beginPath();
+                    ctx.moveTo(node.x, node.y);
+                    ctx.lineTo(rightNode.x, rightNode.y);
+                    ctx.stroke();
+                }
+                
+                // 连接下方节点
+                if (row < rows - 1) {
+                    const bottomNode = nodes[i + cols];
+                    ctx.beginPath();
+                    ctx.moveTo(node.x, node.y);
+                    ctx.lineTo(bottomNode.x, bottomNode.y);
+                    ctx.stroke();
+                }
+                
+                // 额外连接：增加交联密度
+                if (col < cols - 1 && row < rows - 1) {
+                    const diagonalNode = nodes[i + cols + 1];
+                    ctx.beginPath();
+                    ctx.moveTo(node.x, node.y);
+                    ctx.lineTo(diagonalNode.x, diagonalNode.y);
+                    ctx.stroke();
+                }
+            }
+            
+            // 绘制节点（密集交联点）
+            ctx.fillStyle = '#f1c40f';
+            nodes.forEach(node => {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // 添加断裂指示（当受力过大时）
+            if (force > 70) {
+                ctx.strokeStyle = 'rgba(231, 76, 60, 0.8)';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 5]);
+                
+                // 随机选择一些连接线绘制断裂
+                for (let i = 0; i < 5; i++) {
+                    const randomIndex = Math.floor(Math.random() * nodes.length);
+                    const node = nodes[randomIndex];
+                    
+                    // 随机选择连接方向
+                    const direction = Math.floor(Math.random() * 4);
+                    let targetNode;
+                    
+                    if (direction === 0 && randomIndex % cols !== cols - 1) {
+                        targetNode = nodes[randomIndex + 1]; // 右
+                    } else if (direction === 1 && randomIndex < nodes.length - cols) {
+                        targetNode = nodes[randomIndex + cols]; // 下
+                    } else if (direction === 2 && randomIndex % cols !== 0) {
+                        targetNode = nodes[randomIndex - 1]; // 左
+                    } else if (direction === 3 && randomIndex >= cols) {
+                        targetNode = nodes[randomIndex - cols]; // 上
+                    }
+                    
+                    if (targetNode) {
+                        ctx.beginPath();
+                        ctx.moveTo(node.x, node.y);
+                        ctx.lineTo(targetNode.x, targetNode.y);
+                        ctx.stroke();
+                    }
+                }
+                
+                ctx.setLineDash([]);
+            }
+            
+            // 添加文字说明
+            ctx.fillStyle = 'white';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            if (force === 0) {
+                ctx.fillText('密集交联网络，刚性结构', width/2, height * 0.9);
+            } else if (force < 50) {
+                ctx.fillText('有限拉伸，变形困难', width/2, height * 0.9);
+            } else if (force < 70) {
+                ctx.fillText('接近断裂点', width/2, height * 0.9);
+            } else {
+                ctx.fillText('交联点断裂，材料破坏', width/2, height * 0.9);
+            }
+        }
+
+        // 初始化绘制
+        setCanvasSize();
+        drawNoCrosslink(0);
+        drawModerateCrosslink(0);
+        drawExcessiveCrosslink(0);
+
+        // 窗口大小变化时重新设置Canvas尺寸
+        window.addEventListener('resize', function() {
+            setCanvasSize();
+            const force = parseInt(forceSlider.value);
+            drawNoCrosslink(force);
+            drawModerateCrosslink(force);
+            drawExcessiveCrosslink(force);
+        });
+
+        // 受力滑块事件监听
+        forceSlider.addEventListener('input', function() {
+            const force = parseInt(this.value);
+            currentForce.textContent = force + '%';
+            
+            // 更新所有分子结构
+            drawNoCrosslink(force);
+            drawModerateCrosslink(force);
+            drawExcessiveCrosslink(force);
+        });
+    </script>
+</body>
+</html>
